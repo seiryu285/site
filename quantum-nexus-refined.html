@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Nexus: Refined Experience</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+        #quantum-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        .nexus-ui {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        #nexus-title {
+            top: 5%;
+            left: 5%;
+            font-size: 2vw;
+            font-weight: 300;
+            letter-spacing: 0.2em;
+        }
+        #quantum-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5vw;
+            z-index: 1000;
+        }
+        #navigation {
+            position: fixed;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        .nav-item {
+            cursor: pointer;
+            padding: 10px 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        #content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            max-width: 600px;
+        }
+        #content h2 {
+            font-size: 2.5vw;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+        #content p {
+            font-size: 1.2vw;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div id="quantum-loading">Initializing Quantum Nexus...</div>
+    <canvas id="quantum-canvas"></canvas>
+    <div id="nexus-title" class="nexus-ui">QUANTUM NEXUS</div>
+    <div id="navigation">
+        <div class="nav-item" onclick="changeSection('intro')">Intro</div>
+        <div class="nav-item" onclick="changeSection('explore')">Explore</div>
+        <div class="nav-item" onclick="changeSection('interact')">Interact</div>
+    </div>
+    <div id="content"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+
+    <script>
+    let scene, camera, renderer;
+    let quantumMesh, quantumMaterial;
+    let clock;
+    let currentSection = 'intro';
+
+    function initQuantumNexus() {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('quantum-canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        clock = new THREE.Clock();
+
+        const quantumGeometry = new THREE.IcosahedronGeometry(2, 20);
+        quantumMaterial = new THREE.MeshPhongMaterial({
+            color: 0x00ffff,
+            wireframe: true,
+            emissive: 0x00ffff,
+            emissiveIntensity: 0.5,
+            shininess: 100
+        });
+
+        quantumMesh = new THREE.Mesh(quantumGeometry, quantumMaterial);
+        scene.add(quantumMesh);
+
+        const light = new THREE.PointLight(0xffffff, 1, 100);
+        light.position.set(0, 0, 10);
+        scene.add(light);
+
+        window.addEventListener('resize', onWindowResize);
+        document.addEventListener('mousemove', onMouseMove);
+
+        gsap.to('#quantum-loading', { opacity: 0, duration: 1, onComplete: () => {
+            document.getElementById('quantum-loading').style.display = 'none';
+            gsap.to('.nexus-ui', { opacity: 1, duration: 1, stagger: 0.2 });
+        }});
+
+        changeSection('intro');
+        animateQuantumNexus();
+    }
+
+    function animateQuantumNexus() {
+        requestAnimationFrame(animateQuantumNexus);
+
+        const elapsedTime = clock.getElapsedTime();
+
+        quantumMesh.rotation.x = elapsedTime * 0.1;
+        quantumMesh.rotation.y = elapsedTime * 0.15;
+
+        const scale = 1 + Math.sin(elapsedTime * 2) * 0.1;
+        quantumMesh.scale.set(scale, scale, scale);
+
+        renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function onMouseMove(event) {
+        const mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+        const mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        gsap.to(camera.position, {
+            x: mouseX * 0.5,
+            y: mouseY * 0.5,
+            duration: 1
+        });
+    }
+
+    function changeSection(section) {
+        currentSection = section;
+        const content = document.getElementById('content');
+        gsap.to(content, { opacity: 0, duration: 0.5, onComplete: () => {
+            switch(section) {
+                case 'intro':
+                    content.innerHTML = `
+                        <h2>Welcome to Quantum Nexus</h2>
+                        <p>Explore the fascinating world of quantum mechanics through this interactive experience.</p>
+                    `;
+                    gsap.to(camera.position, { z: 5, duration: 1.5, ease: "power2.inOut" });
+                    break;
+                case 'explore':
+                    content.innerHTML = `
+                        <h2>Quantum Exploration</h2>
+                        <p>Dive into the quantum realm and witness the strange behavior of particles at the smallest scales.</p>
+                    `;
+                    gsap.to(camera.position, { z: 3, duration: 1.5, ease: "power2.inOut" });
+                    break;
+                case 'interact':
+                    content.innerHTML = `
+                        <h2>Quantum Interaction</h2>
+                        <p>Observe how your actions influence the fabric of reality in the quantum world.</p>
+                    `;
+                    gsap.to(camera.position, { z: 4, duration: 1.5, ease: "power2.inOut" });
+                    break;
+            }
+            gsap.to(content, { opacity: 1, duration: 0.5 });
+        }});
+    }
+
+    initQuantumNexus();
+    </script>
+</body>
+</html>
